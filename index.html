@@ -7,13 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
 
-  <!--
-    ===== Step 5: 3rd Party Error Tracking (TrackJS) =====
-    The TrackJS agent must load as early as possible (top of <head>) so it can
-    capture errors that happen during page load. Replace YOUR_TOKEN_HERE with the
-    token from your TrackJS dashboard (Settings -> Install).
-    Docs: https://docs.trackjs.com/browser-agent/installation/
-  -->
   <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
   <script>
     window.TrackJS && TrackJS.install({
@@ -103,17 +96,8 @@
   </main>
 
   <script>
-    // TrackJS verification: sends a one-off test message to the dashboard on load
-    // so we can confirm the token/install is working. Safe to remove once verified.
     window.TrackJS && TrackJS.track('Testing TrackJS!');
 
-    // =========================================================================
-    // Step 4: Custom Errors (extending the built-in Error object)
-    // Pattern follows https://javascript.info/custom-errors — call super(message)
-    // so the message/stack are set up correctly, then set our own `name`.
-    // =========================================================================
-
-    // Base class for anything the calculator considers a "known" / expected error.
     class CalculatorError extends Error {
       constructor(message) {
         super(message);
@@ -121,8 +105,6 @@
       }
     }
 
-    // A more specific error that extends our own CalculatorError. This lets us
-    // catch it on its own OR catch it as a generic CalculatorError.
     class DivideByZeroError extends CalculatorError {
       constructor(message = 'Cannot divide by zero.') {
         super(message);
@@ -130,8 +112,6 @@
       }
     }
 
-    // Thrown when an expected piece of the DOM is missing (e.g. someone
-    // commented out the <output> node in the HTML).
     class MissingElementError extends CalculatorError {
       constructor(selector) {
         super(`Required element "${selector}" was not found in the DOM.`);
@@ -139,17 +119,10 @@
       }
     }
 
-    // =========================================================================
-    // Step 3: try / catch / finally + throw, used in a realistic calculator flow
-    // =========================================================================
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
 
-      // We look the output node up fresh each time. If you comment it out in the
-      // HTML (<!-- <output></output> -->), this becomes null and we throw a
-      // MissingElementError — a real, realistic failure rather than a fake
-      // "aintGonnaWork()" call.
       let output = document.querySelector('output');
 
       try {
@@ -161,7 +134,6 @@
         let secondNum = document.querySelector('#second-num').value;
         let operator = document.querySelector('#operator').value;
 
-        // Validate the inputs and throw a custom error if they're not usable.
         if (firstNum.trim() === '' || secondNum.trim() === '') {
           throw new CalculatorError('Both numbers are required.');
         }
@@ -182,85 +154,66 @@
         const result = eval(`${a} ${operator} ${b}`);
         output.innerHTML = result;
       } catch (err) {
-        // Handle the errors we know about and show a friendly message.
         if (err instanceof CalculatorError) {
           console.error(`${err.name}: ${err.message}`);
           if (output) {
             output.innerHTML = `Error: ${err.message}`;
           } else {
-            // Nowhere to render — fall back to an alert so the user still sees it.
             alert(`Error: ${err.message}`);
           }
         } else {
-          // Something we didn't anticipate — log it and re-throw so the global
-          // handler (and TrackJS) can pick it up.
           console.error('Unexpected error during calculation:', err);
           throw err;
         }
       } finally {
-        // `finally` always runs, success or failure — great place for cleanup
-        // or, here, just confirming the attempt completed.
         console.log('Calculation attempt finished.');
       }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
-    // =========================================================================
-    // Step 2: Wire each button to the matching console method.
-    // Buttons are bound by their index in the #error-btns section.
-    // =========================================================================
+    // Start your code here
+    // You may move this JS to another file if you wish
 
-    // Some sample data we can demonstrate the methods on.
     const people = [
       { name: 'Ada Lovelace', role: 'Mathematician', born: 1815 },
       { name: 'Alan Turing', role: 'Computer Scientist', born: 1912 },
       { name: 'Grace Hopper', role: 'Rear Admiral', born: 1906 },
     ];
 
-    // [0] console.log — basic informational output.
     errorBtns[0].addEventListener('click', () => {
       console.log('Console Log demo: the calculator app has booted.', people[0]);
     });
 
-    // [1] console.error — log an error-styled message (red, with a stack).
     errorBtns[1].addEventListener('click', () => {
       console.error('Console Error demo: this is what an error message looks like.');
     });
 
-    // [2] console.count — counts how many times this label has been hit.
     errorBtns[2].addEventListener('click', () => {
       console.count('Console Count demo');
     });
 
-    // [3] console.warn — a warning-styled message (yellow).
     errorBtns[3].addEventListener('click', () => {
       console.warn('Console Warn demo: something might be off, but it is not fatal.');
     });
 
-    // [4] console.assert — only logs when the assertion is FALSE.
     errorBtns[4].addEventListener('click', () => {
       const total = 2 + 2;
       console.assert(total === 5, 'Console Assert demo: expected 2 + 2 to equal 5, but it does not.');
     });
 
-    // [5] console.clear — wipes the console.
     errorBtns[5].addEventListener('click', () => {
       console.clear();
     });
 
-    // [6] console.dir — shows an interactive list of an object's properties.
     errorBtns[6].addEventListener('click', () => {
       console.dir(document.querySelector('#error-btns'));
     });
 
-    // [7] console.dirxml — shows an XML/HTML tree of a DOM node.
     errorBtns[7].addEventListener('click', () => {
       console.dirxml(document.querySelector('form'));
     });
 
-    // [8] console.group — starts an indented, collapsible group. We also use
-    //     console.groupCollapsed-style nesting and log inside it to show it off.
     errorBtns[8].addEventListener('click', () => {
       console.group('Console Group demo');
       console.log('This message is inside the group.');
@@ -271,29 +224,24 @@
       console.log('Click "Console Group End" to close the outer group.');
     });
 
-    // [9] console.groupEnd — closes the most recently opened group.
     errorBtns[9].addEventListener('click', () => {
       console.groupEnd();
       console.log('Console Group End demo: outer group closed.');
     });
 
-    // [10] console.table — renders array/object data as a table.
     errorBtns[10].addEventListener('click', () => {
       console.table(people);
     });
 
-    // [11] console.time — starts a named timer.
     errorBtns[11].addEventListener('click', () => {
       console.time('Console Timer demo');
       console.log('Timer started. Click "End Timer" to see how long it ran.');
     });
 
-    // [12] console.timeEnd — stops the named timer and prints the elapsed time.
     errorBtns[12].addEventListener('click', () => {
       console.timeEnd('Console Timer demo');
     });
 
-    // [13] console.trace — prints a stack trace showing how we got here.
     errorBtns[13].addEventListener('click', () => {
       function inner() {
         console.trace('Console Trace demo: here is the call stack.');
@@ -304,38 +252,17 @@
       outer();
     });
 
-    // =========================================================================
-    // Step 5: Global Error Handler
-    // A "global" error is one thrown outside of any try/catch. We can catch it
-    // in two standard ways. This mirrors http://ajaxref.com/ch2/jserrorreporter.html
-    // where window.onerror is used to capture the message and (optionally) ship
-    // it elsewhere with fetch / XMLHttpRequest.
-    // =========================================================================
-
-    // Method A: window.onerror (the classic approach from the book demo).
     window.onerror = function (message, source, lineno, colno, error) {
       console.log('[window.onerror] Caught a global error:', message,
         `(at ${source}:${lineno}:${colno})`);
-
-      // This is where a real app would report the error to a server, e.g.:
-      // fetch('/log', { method: 'POST', body: JSON.stringify({ message, source, lineno, colno }) });
-
-      // Return false so the error still propagates to the console (and TrackJS).
       return false;
     };
 
-    // Method B: window.addEventListener('error', ...) — the modern equivalent,
-    // also shown in the demo video. You can register more than one of these.
     window.addEventListener('error', (event) => {
       console.log('[addEventListener("error")] Caught a global error:', event.message);
     });
 
-    // [14] Trigger a Global Error — intentionally call an undefined function
-    //      OUTSIDE of any try/catch so it bubbles up to the global handlers above
-    //      (and to TrackJS, once your token is installed).
     errorBtns[14].addEventListener('click', () => {
-      // `aFunctionThatDoesNotExist` is not defined anywhere, so this throws a
-      // ReferenceError that nothing local catches -> the global handlers fire.
       aFunctionThatDoesNotExist();
     });
   </script>
